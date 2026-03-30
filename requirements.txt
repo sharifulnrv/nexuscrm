@@ -1,0 +1,9 @@
+Flask
+gspread
+oauth2client
+pandas
+openpyxl
+python-dotenv
+flask-login
+werkzeug
+Plotly

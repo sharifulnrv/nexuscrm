@@ -1,0 +1,193 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<!-- Agent Dashboard Header -->
+<div class="row align-items-center mb-4">
+    <div class="col-md-6 col-sm-12">
+        <h2 class="fw-800 mb-1">My Performance</h2>
+        <p class="text-muted small">Manage your daily interactions and track follow-ups.</p>
+    </div>
+    <div class="col-md-6 col-sm-12 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('dashboard.add_lead') }}" class="btn btn-primary w-100 w-md-auto">
+            <i class="fas fa-plus me-2"></i> New Prospect
+        </a>
+    </div>
+</div>
+
+<!-- Notification Panel - Always Visible -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 {% if pending_handovers %}bg-primary text-white{% else %}bg-white border-2 border-dashed{% endif %} p-4">
+            <div class="d-flex align-items-center {% if pending_handovers %}mb-4{% endif %}">
+                <div class="{% if pending_handovers %}bg-white bg-opacity-20{% else %}bg-light text-muted{% endif %} p-3 rounded-circle me-3">
+                    <i class="fas fa-exchange-alt fa-lg"></i>
+                </div>
+                <div class="flex-grow-1">
+                    {% if pending_handovers %}
+                        <h5 class="fw-bold mb-0">Incoming Lead Transfers</h5>
+                        <p class="mb-0 opacity-75 small">Please review and accept these {{ pending_handovers|length }} leads.</p>
+                    {% else %}
+                        <h6 class="fw-bold mb-0 text-muted">No Incoming Notifications</h6>
+                        <p class="mb-0 text-muted smaller">You have no pending lead transfers at this moment.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if pending_handovers %}
+            <div class="row g-3">
+                {% for h in pending_handovers %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="bg-white text-dark p-3 rounded-4 shadow-sm h-100">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="fw-800 text-primary">{{ h.LeadName }}</div>
+                            <span class="badge bg-light text-muted fw-normal" style="font-size: 0.65rem;">From: {{ h.FromAgent }}</span>
+                        </div>
+                        <div class="smaller text-muted mb-3"><i class="far fa-clock me-1"></i> Sent {{ h.Timestamp.split(' ')[0] if h.Timestamp else '' }}</div>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('dashboard.respond_handover', lead_id=h.LeadID, action='Accepted') }}" class="btn btn-success btn-sm flex-fill py-2">
+                                <i class="fas fa-check me-1"></i> Accept
+                            </a>
+                            <a href="{{ url_for('dashboard.respond_handover', lead_id=h.LeadID, action='Rejected') }}" class="btn btn-outline-danger btn-sm flex-fill py-2">
+                                <i class="fas fa-times me-1"></i> Reject
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if sent_handovers %}
+<!-- Outgoing Handovers Tracking -->
+<div class="card border-0 shadow-sm rounded-4 mb-4 border-start border-4 border-warning">
+    <div class="card-header bg-white border-0 p-3 pb-0">
+        <h6 class="fw-bold mb-0 text-warning"><i class="fas fa-paper-plane me-2"></i>Pending Transfers Awaiting Acceptance ({{ sent_handovers|length }})</h6>
+    </div>
+    <div class="card-body p-3">
+        <div class="row g-2">
+            {% for h in sent_handovers %}
+            <div class="col-md-4">
+                <div class="p-2 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold small mb-0">{{ h.LeadName }}</div>
+                        <div class="smaller text-muted">Sent to: {{ h.ToAgent }}</div>
+                    </div>
+                    <span class="badge bg-white text-warning border border-warning-subtle py-1 px-2" style="font-size: 0.6rem;">Awaiting Approval</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Stats for Agent -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="card border-0 shadow-sm p-3 h-100 border-left border-4 border-primary">
+            <div class="text-muted smaller fw-bold text-uppercase">Today's Reminders</div>
+            <h4 class="fw-800 mb-0">{{ today_tasks|length }}</h4>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="card border-0 shadow-sm p-3 h-100 bg-white border-left border-4 border-warning">
+            <div class="text-muted smaller fw-bold text-uppercase">Overdue</div>
+            <h4 class="fw-800 mb-0">{{ overdue|length }}</h4>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="card border-0 shadow-sm p-3 h-100 bg-white border-left border-4 border-success">
+            <div class="text-muted smaller fw-bold text-uppercase">Active Leads</div>
+            <h4 class="fw-800 mb-0">{{ leads|length }}</h4>
+        </div>
+    </div>
+</div>
+
+{% if today_tasks %}
+<!-- Today's Work List -->
+<div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: #f0f7ff;">
+    <div class="card-header bg-transparent border-0 p-3 pb-0">
+        <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-list-check me-2"></i>To-Do Today</h6>
+    </div>
+    <div class="card-body p-3">
+        <div class="list-group list-group-flush bg-transparent">
+            {% for rem in today_tasks %}
+            <a href="{{ url_for('dashboard.edit_lead', lead_id=rem.ID) }}" class="list-group-item list-group-item-action bg-transparent border-0 d-flex justify-content-between align-items-center px-2 py-2">
+                <div class="d-flex align-items-center">
+                    <div class="bg-primary text-white rounded-circle me-3 d-grid place-items-center" style="width: 24px; height: 24px; font-size: 0.7rem;">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold small">{{ rem.Name }}</div>
+                        <div class="smaller text-muted">{{ rem.Phone }}</div>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-muted opacity-25 small"></i>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- My Lead Directory -->
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white p-4">
+        <div class="row align-items-center">
+            <div class="col-md-6 col-sm-12 mb-3 mb-md-0">
+                <h5 class="fw-bold mb-0">My Lead Directory</h5>
+            </div>
+            <div class="col-md-6 col-sm-12 text-md-end">
+                <form class="d-flex" method="GET" action="{{ url_for('dashboard.index') }}">
+                    <input type="text" name="q" class="form-control me-2" placeholder="Search my leads..." value="{{ q or '' }}">
+                    <button class="btn btn-primary" type="submit">Search</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th class="d-none d-md-table-cell">Phone</th>
+                    <th class="text-center">Rating</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr>
+                    <td>
+                        <div class="fw-bold text-dark">{{ lead.Name }}</div>
+                        <div class="d-md-none small text-primary font-monospace">{{ lead.Phone }}</div>
+                        <div class="text-muted smaller d-none d-md-block">{{ lead.Profession or 'Prospect' }}</div>
+                    </td>
+                    <td class="d-none d-md-table-cell"><span class="fw-medium font-monospace">{{ lead.Phone }}</span></td>
+                    <td class="text-center">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                            {{ lead.InterestStar }} / 5
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <div class="btn-group">
+                            <a href="{{ url_for('dashboard.edit_lead', lead_id=lead.ID) }}" class="btn btn-sm btn-light border shadow-sm">
+                                <i class="far fa-user"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if not leads %}
+    <div class="p-5 text-center bg-light text-muted">
+        No active leads in your directory.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
