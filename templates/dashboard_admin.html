@@ -282,10 +282,9 @@
                         <div class="smaller text-danger fw-bold">{{ lead.FollowUpDate if lead.FollowUpDate else '-' }}</div>
                     </td>
                     <td class="text-center">
-                        <div class="text-warning smaller">
-                            {% set stars = lead.InterestStar|int %}
-                            {% for i in range(stars) %}<i class="fas fa-star"></i>{% endfor %}
-                        </div>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
+                            {{ lead.InterestStar }} / 5
+                        </span>
                     </td>
                     <td class="d-none d-lg-table-cell">
                         <div class="small fw-bold">{{ lead.Agent }}</div>

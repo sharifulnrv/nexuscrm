@@ -339,6 +339,12 @@ class DBHandler:
         sql = f"INSERT INTO notes_history ({columns}) VALUES ({placeholders})"
         
         cursor.execute(sql, list(data.values()))
+        
+        # Synchronize rating with leads table if provided in history
+        if data.get('interest_star') is not None and data.get('interest_star') != '':
+            cursor.execute("UPDATE leads SET interest_star=?, last_updated=? WHERE id=?", 
+                           (data['interest_star'], now, lead_id))
+            
         conn.commit()
         conn.close()
         return True
