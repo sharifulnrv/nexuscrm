@@ -241,6 +241,11 @@ def index():
                              pending_handovers=pending_handovers, 
                              sent_handovers=sent_handovers)
 
+@dashboard_bp.route('/menu')
+@login_required
+def menu_hub():
+    return render_template('menu.html')
+
 @dashboard_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():

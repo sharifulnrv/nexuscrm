@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="page-transition p-3">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="text-center mb-5">
+                <div class="bg-primary text-white rounded-circle shadow-lg mx-auto mb-3 d-grid place-items-center" style="width: 64px; height: 64px;">
+                    <i class="fas fa-compass fa-2x"></i>
+                </div>
+                <h3 class="fw-800 text-dark mb-1">Navigation Hub</h3>
+                <p class="text-muted small">Centralized access to all CRM resources.</p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6">
+                    <a href="{{ url_for('dashboard.index') }}" class="card border-0 shadow-sm h-100 text-decoration-none transition-all hover-translate-y">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-primary mb-3"><i class="fas fa-th-large fa-2x opacity-50"></i></div>
+                            <div class="fw-bold text-dark">Overview</div>
+                            <div class="smaller text-muted mt-1">Dashboard</div>
+                        </div>
+                    </a>
+                </div>
+                
+                {% if session.user and session.user.Role == 'Admin' %}
+                <div class="col-6">
+                    <a href="{{ url_for('dashboard.manage_agents') }}" class="card border-0 shadow-sm h-100 text-decoration-none transition-all hover-translate-y">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-secondary mb-3"><i class="fas fa-users-cog fa-2x opacity-50"></i></div>
+                            <div class="fw-bold text-dark">Agents</div>
+                            <div class="smaller text-muted mt-1">Management</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6">
+                    <a href="{{ url_for('dashboard.bulk_upload') }}" class="card border-0 shadow-sm h-100 text-decoration-none transition-all hover-translate-y">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-info mb-3"><i class="fas fa-cloud-upload-alt fa-2x opacity-50"></i></div>
+                            <div class="fw-bold text-dark">Import</div>
+                            <div class="smaller text-muted mt-1">Bulk Tools</div>
+                        </div>
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="col-6">
+                    <a href="{{ url_for('dashboard.edit_profile') }}" class="card border-0 shadow-sm h-100 text-decoration-none transition-all hover-translate-y">
+                        <div class="card-body p-4 text-center">
+                            <div class="text-warning mb-3"><i class="fas fa-id-card fa-2x opacity-50"></i></div>
+                            <div class="fw-bold text-dark">Profile</div>
+                            <div class="smaller text-muted mt-1">Account</div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100 py-3 rounded-4 fw-bold">
+                        <i class="fas fa-sign-out-alt me-2"></i> SIGN OUT
+                    </a>
+                </div>
+            </div>
+            
+            <div class="text-center mt-5">
+                <a href="javascript:history.back()" class="btn btn-link text-muted text-decoration-none smaller fw-bold">
+                    <i class="fas fa-arrow-left me-2"></i> Return to Previous
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
