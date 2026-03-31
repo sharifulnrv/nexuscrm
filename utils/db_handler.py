@@ -403,13 +403,15 @@ class DBHandler:
                           VALUES (?, ?, ?, ?, ?, ?)''', 
                        (lead_id, from_agent, to_agent, now, 'Pending', lead_name))
         
+        conn.commit()
+        conn.close()
+
+        # Log history after committing main transaction to avoid SQLite deadlocks
         self.add_history_entry(lead_id, {
             'Agent': from_agent,
             'Note': f"Handover initiated to {to_agent}."
         })
         
-        conn.commit()
-        conn.close()
         return True, "Handover initiated."
 
     def get_pending_handovers(self, username):
@@ -453,17 +455,19 @@ class DBHandler:
             
         cursor.execute("UPDATE handovers SET status=? WHERE id=?", (action, handover['id']))
         
-        self.add_history_entry(lead_id, {
-            'Agent': current_agent,
-            'Note': f"Handover {action.lower()}."
-        })
-        
         if action == 'Accepted':
             cursor.execute("UPDATE leads SET agent=?, last_updated=? WHERE id=?", 
                            (current_agent, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), lead_id))
             
         conn.commit()
         conn.close()
+
+        # Log history after committing main transaction to avoid SQLite deadlocks
+        self.add_history_entry(lead_id, {
+            'Agent': current_agent,
+            'Note': f"Handover {action.lower()}."
+        })
+        
         return True, f"Handover {action.lower()} completed."
 
     def update_user_password(self, username, new_password):
