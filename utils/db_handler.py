@@ -140,6 +140,8 @@ class DBHandler:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT l.*, 
+                   l.interest_star as static_rating,
+                   COALESCE((SELECT interest_star FROM notes_history WHERE lead_id = l.id AND interest_star != '' AND interest_star IS NOT NULL ORDER BY timestamp DESC LIMIT 1), l.interest_star) as interest_star,
                    (SELECT MAX(call_date) FROM notes_history WHERE lead_id = l.id AND call_date != '') as last_call_date
             FROM leads l
         """)
