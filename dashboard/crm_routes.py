@@ -556,14 +556,11 @@ def bulk_upload():
 def manage_agents():
     if request.method == 'POST':
         user_data = request.form.to_dict()
-        conn = db._get_connection()
-        cursor = conn.cursor()
-        cursor.execute("INSERT OR REPLACE INTO users (username, password, role, name, phone) VALUES (?, ?, ?, ?, ?)",
-                       (user_data.get('Username'), user_data.get('Password'), user_data.get('Role'), 
-                        user_data.get('Name'), user_data.get('Phone')))
-        conn.commit()
-        conn.close()
-        flash("Agent saved successfully.", "success")
+        success, message = db.add_user(user_data)
+        if success:
+            flash(message, "success")
+        else:
+            flash(message, "danger")
             
     users = db.get_users()
     agents = [u for u in users if u['Role'] == Config.ROLE_AGENT]

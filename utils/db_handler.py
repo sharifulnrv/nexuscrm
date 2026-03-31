@@ -112,6 +112,44 @@ class DBHandler:
             }
         return None
 
+    def add_user(self, data):
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        # Mapping for incoming user data
+        mapping = {
+            'username': ['Username', 'username'],
+            'password': ['Password', 'password'],
+            'role': ['Role', 'role'],
+            'name': ['Name', 'name'],
+            'phone': ['Phone', 'phone']
+        }
+        
+        final_data = {}
+        for db_col, keys in mapping.items():
+            val = ''
+            for k in keys:
+                if k in data:
+                    val = data[k]
+                    break
+            final_data[db_col] = val
+            
+        if not final_data.get('username') or not final_data.get('password'):
+            conn.close()
+            return False, "Username and password are required."
+            
+        try:
+            columns = ', '.join(final_data.keys())
+            placeholders = ', '.join(['?'] * len(final_data))
+            sql = f"INSERT OR REPLACE INTO users ({columns}) VALUES ({placeholders})"
+            cursor.execute(sql, list(final_data.values()))
+            conn.commit()
+            conn.close()
+            return True, "User saved successfully."
+        except Exception as e:
+            conn.close()
+            return False, str(e)
+
     def _map_lead_row(self, row):
         if not row: return None
         d = dict(row)
