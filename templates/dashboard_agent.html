@@ -119,37 +119,6 @@
         </div>
     </div>
 </div>
-<!-- Intelligence Insights Section -->
-<div class="row g-4 mb-5 page-transition justify-content-center">
-    <div class="col-12 col-md-8 col-xl-6">
-        <div class="card border-0 shadow-md rounded-lg">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h6 class="fw-800 text-muted small text-uppercase mb-0">Lead Quality Portfolio</h6>
-                    <i class="fas fa-chart-pie text-primary opacity-25"></i>
-                </div>
-                <div id="qualityChart" style="min-height: 250px;"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var ratingData = {{ rating_dist|tojson }};
-        var optionsQuality = {
-            series: ratingData,
-            chart: { type: 'donut', height: 280, width: '100%', fontFamily: 'Inter, sans-serif' },
-            labels: ['Unrated', 'Poor', 'Fair', 'Neutral', 'Good', 'Excellent'],
-            colors: ['#cbd5e1', '#f87171', '#fbbf24', '#38bdf8', '#818cf8', '#6366f1'],
-            dataLabels: { enabled: false },
-            legend: { position: 'bottom', horizontalAlign: 'center' },
-            plotOptions: { pie: { donut: { size: '75%' } } },
-            stroke: { show: false }
-        };
-        new ApexCharts(document.querySelector("#qualityChart"), optionsQuality).render();
-    });
-</script>
 
 {% if today_tasks %}
 <!-- Today's Work List -->
