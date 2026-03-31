@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-6">
+        <h2 class="fw-800 mb-1">Interaction Details</h2>
+        <p class="text-muted small">Recorded by {{ entry.Agent }} on {{ entry.Timestamp }}</p>
+    </div>
+    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+        <button onclick="window.close();" class="btn btn-light border shadow-sm">
+            <i class="fas fa-times me-2"></i> Close Window
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+            <div class="card-body p-5">
+                <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-primary">Customer Interaction Report</h5>
+                        <p class="text-muted smaller mb-0">For {{ entry.CustomerName or 'Lead ID: ' ~ entry.LeadID }}</p>
+                    </div>
+                    {% if entry.InterestStar %}
+                    <div class="text-warning h4 mb-0">
+                        {% for i in range(entry.InterestStar|int) %}⭐{% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="row g-4 mb-5">
+                    <div class="col-sm-6">
+                        <label class="smaller text-muted text-uppercase fw-bold mb-1 d-block">Interaction Date</label>
+                        <div class="fw-bold">{{ entry.CallDate if entry.CallDate else '-' }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="smaller text-muted text-uppercase fw-bold mb-1 d-block">Next Follow-up</label>
+                        <div class="fw-bold text-danger">{{ entry.FollowUpDate if entry.FollowUpDate else '-' }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="smaller text-muted text-uppercase fw-bold mb-1 d-block">Agent</label>
+                        <div class="fw-bold">{{ entry.Agent }}</div>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="smaller text-muted text-uppercase fw-bold mb-1 d-block">Recording</label>
+                        <div>
+                            {% if entry.RecordingURL %}
+                            <a href="{{ entry.RecordingURL }}" target="_blank" class="smaller text-decoration-none fw-bold text-danger">
+                                <i class="fas fa-play-circle me-1"></i> Open Recording URL
+                            </a>
+                            {% else %}
+                            <span class="text-muted italic">No recording shared</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-0">
+                    <label class="smaller text-muted text-uppercase fw-bold mb-2 d-block">Full Interaction Summary</label>
+                    <div class="p-4 bg-light rounded-4 text-dark border-0" style="white-space: pre-wrap; line-height: 1.6;">{{ entry.Note or 'No summary provided.' }}</div>
+                </div>
+            </div>
+            <div class="card-footer bg-white border-0 p-4 text-center border-top">
+                <span class="smaller text-muted">System Log ID: #{{ entry.ID }} | Generated on {{ entry.Timestamp }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

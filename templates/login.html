@@ -1,73 +1,63 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="row align-items-center justify-content-center min-vh-100" style="margin-top: -100px;">
-    <div class="col-md-5">
-        <div class="box-decor position-relative">
-            <div class="position-absolute top-0 start-0 translate-middle bg-primary rounded-circle opacity-10" style="width: 300px; height: 300px; z-index: -1; filter: blur(60px);"></div>
-            <div class="position-absolute bottom-0 end-0 translate-middle bg-accent rounded-circle opacity-10" style="width: 200px; height: 200px; z-index: -1; filter: blur(40px);"></div>
-            
-            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
-                <div class="bg-primary p-5 text-center text-white position-relative">
-                    <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
-                    <div class="mb-3">
-                        <i class="fas fa-rocket fa-4x mb-3"></i>
+<div class="row align-items-center justify-content-center min-vh-100 page-transition" style="margin-top: -80px;">
+    <div class="col-12 col-md-6 col-lg-4">
+        <!-- Decoration Blurs -->
+        <div class="position-absolute top-0 start-0 translate-middle bg-primary rounded-circle opacity-10" style="width: 400px; height: 400px; z-index: -1; filter: blur(80px);"></div>
+        <div class="position-absolute bottom-0 end-0 translate-middle bg-secondary rounded-circle opacity-10" style="width: 300px; height: 300px; z-index: -1; filter: blur(60px);"></div>
+        
+        <div class="card shadow-md border-0 rounded-lg overflow-hidden">
+            <div class="bg-primary p-5 text-center text-white position-relative overflow-hidden">
+                <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+                <div class="mb-4">
+                    <div class="avatar-lg bg-white bg-opacity-20 rounded-circle mx-auto d-grid place-items-center shadow-lg" style="width: 72px; height: 72px;">
+                        <i class="fas fa-rocket fa-2x"></i>
                     </div>
-                    <h2 class="fw-800 mb-1">Welcome Back</h2>
-                    <p class="opacity-75 mb-0">Sign in to managed your leads effectively</p>
                 </div>
-                <div class="card-body p-5">
-                    <form method="POST">
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary small">USERNAME</label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-0"><i class="fas fa-user-alt text-muted small"></i></span>
-                                <input type="text" name="username" class="form-control bg-light border-0 fs-6" placeholder="Enter username" required>
-                            </div>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-bold text-secondary small">PASSWORD</label>
-                            <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-light border-0"><i class="fas fa-lock text-muted small"></i></span>
-                                <input type="password" name="password" class="form-control bg-light border-0 fs-6" placeholder="••••••••" required>
-                            </div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="remember">
-                                <label class="form-check-label small text-muted" for="remember">Remember me</label>
-                            </div>
-                            <a href="#" class="small text-primary text-decoration-none fw-bold">Forgot password?</a>
-                        </div>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg py-3 shadow-lg">
-                                Access Dashboard <i class="fas fa-arrow-right ms-2 animate-bounce-x"></i>
-                            </button>
-                        </div>
-                    </form>
-                </div>
+                <h2 class="fw-800 mb-1 letter-tight">Welcome Back</h2>
+                <p class="opacity-75 mb-0 small fw-medium">Secure access to NexusCRM Intelligence</p>
             </div>
-            
-            <div class="text-center mt-4">
-                <p class="text-muted small">© 2026 NexusCRM. All rights reserved.</p>
+            <div class="card-body p-4 p-md-5">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Credential Identifier</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-user-shield text-muted opacity-50"></i></span>
+                            <input type="text" name="username" class="form-control bg-light border-0 fs-6 fw-medium" placeholder="Username" required autofocus>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Security Key</label>
+                        <div class="input-group input-group-lg">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-key text-muted opacity-50"></i></span>
+                            <input type="password" name="password" class="form-control bg-light border-0 fs-6" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-5">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="remember">
+                            <label class="form-check-label smaller text-muted fw-medium" for="remember">Keep me active</label>
+                        </div>
+                        <a href="#" class="smaller text-primary text-decoration-none fw-bold">Reset portal?</a>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg py-3 shadow-md fw-800">
+                            AUTHENTICATE <i class="fas fa-shield-alt ms-2 opacity-50"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <p class="text-muted smaller mb-0">&copy; 2026 NexusCRM. Professional Lead Intelligence.</p>
+            <div class="mt-2">
+                <i class="fas fa-lock me-1 opacity-25"></i><span class="smaller opacity-50">S3-Level Local Encryption</span>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .fw-800 { font-weight: 800; }
-    .smaller { font-size: 0.8rem; }
-    
-    @keyframes bounce-x {
-        0%, 100% { transform: translateX(0); }
-        50% { transform: translateX(4px); }
-    }
-    .animate-bounce-x {
-        animation: bounce-x 1s infinite;
-        display: inline-block;
-    }
-</style>
 {% endblock %}

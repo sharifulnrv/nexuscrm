@@ -49,6 +49,7 @@ def init_db(db_path='l.db'):
         visit_interested TEXT,
         visit_date TEXT,
         call_recording TEXT,
+        call_date TEXT,
         followup_date TEXT,
         interest_star INTEGER,
         FOREIGN KEY (lead_id) REFERENCES leads (id)

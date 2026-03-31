@@ -1,56 +1,221 @@
 {% extends "layout.html" %}
 
 {% block content %}
-<div class="row g-4">
+<div class="row g-4 page-transition">
     <!-- Profile Sidebar -->
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-            <div class="bg-primary p-4 text-center text-white">
-                <div class="avatar-lg bg-white bg-opacity-20 rounded-circle mx-auto mb-3 d-grid place-items-center" style="width: 80px; height: 80px;">
-                    <i class="fas fa-user-circle fa-4x"></i>
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-md h-100 sticky-lg-top" style="top: 100px; z-index: 1;">
+            <div class="bg-primary p-4 p-md-5 text-center text-white position-relative">
+                <div class="avatar-lg bg-white bg-opacity-20 rounded-circle mx-auto mb-3 d-grid place-items-center shadow-lg" style="width: 100px; height: 100px; border: 4px solid rgba(255,255,255,0.1);">
+                    <i class="fas fa-user-circle fa-5x"></i>
                 </div>
-                <h3 class="fw-800 mb-0">{{ lead.Name if lead else 'New Lead' }}</h3>
-                <p class="opacity-75 mb-0 fs-6">{{ lead.Profession if lead else 'New Prospect' }}</p>
+                <h3 class="fw-800 mb-1 letter-tight">{{ lead.Name if lead else 'New Lead' }}</h3>
+                <p class="opacity-75 mb-0 small fw-medium">{{ lead.Profession if lead else 'New Prospect' }}</p>
                 
-                <div class="mt-4 d-flex justify-content-center gap-2">
-                    <div class="bg-white bg-opacity-10 px-2 py-2 rounded-3 text-start flex-fill">
-                        <div class="smaller text-uppercase opacity-75 fw-bold" style="font-size: 0.65rem;">Interest</div>
-                        <div class="mb-0 small">
-                            {% for i in range(lead.InterestStar|int if lead else 0) %}⭐{% endfor %}
+                <div class="mt-4 row g-2">
+                    <div class="col-6">
+                        <div class="bg-white bg-opacity-10 p-2 rounded-3 text-start h-100 border border-white border-opacity-10">
+                            <div class="smaller text-uppercase opacity-75 fw-800 mb-1" style="font-size: 0.6rem;">Interest</div>
+                            <div class="mb-0 small">
+                                {% for i in range(lead.InterestStar|int if lead else 0) %}⭐{% endfor %}
+                            </div>
                         </div>
                     </div>
-                    <div class="bg-white bg-opacity-10 px-2 py-2 rounded-3 text-start flex-fill">
-                        <div class="smaller text-uppercase opacity-75 fw-bold" style="font-size: 0.65rem;">Interactions</div>
-                        <div class="h6 mb-0">{{ lead.CallCount if lead else 0 }}</div>
+                    <div class="col-6">
+                        <div class="bg-white bg-opacity-10 p-2 rounded-3 text-start h-100 border border-white border-opacity-10">
+                            <div class="smaller text-uppercase opacity-75 fw-800 mb-1" style="font-size: 0.6rem;">Calls</div>
+                            <div class="h5 mb-0 fw-800">{{ lead.CallCount if lead else 0 }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="card-body p-4">
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item px-0 py-2 border-0">
-                        <label class="smaller text-muted fw-bold text-uppercase mb-1 d-block">Phone Number</label>
-                        <div class="fw-bold text-primary mb-0 font-monospace">{{ lead.Phone if lead else '-' }}</div>
+                <div class="list-group list-group-flush border-0">
+                    <div class="list-group-item px-0 py-3 border-0">
+                        <label class="smaller text-muted fw-bold text-uppercase mb-1 d-block" style="font-size: 0.65rem;">Connect</label>
+                        <div class="d-flex align-items-center">
+                            <div class="fw-800 text-primary h5 mb-0 me-3">{{ lead.Phone if lead else '-' }}</div>
+                            {% if lead %}
+                            <a href="tel:{{ lead.Phone }}" class="btn btn-sm btn-primary-soft text-primary p-2 rounded-circle" style="width:32px; height:32px; display:grid; place-items:center;">
+                                <i class="fas fa-phone-alt small"></i>
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="list-group-item px-0 py-2 border-0">
-                        <label class="smaller text-muted fw-bold text-uppercase mb-1 d-block">Assigned Agent</label>
-                        <div class="badge bg-light text-primary border">{{ lead.Agent if lead else session.user.Username }}</div>
+                    <div class="list-group-item px-0 py-3 border-0">
+                        <label class="smaller text-muted fw-bold text-uppercase mb-1 d-block" style="font-size: 0.65rem;">Assigned Agent</label>
+                        <div class="badge-premium bg-light text-primary border-0">{{ lead.Agent if lead else session.user.Username }}</div>
                     </div>
                 </div>
                 
                 {% if lead %}
-                <hr class="my-4 opacity-10">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('dashboard.download_report', lead_id=lead.ID) }}" class="btn btn-outline-success btn-sm py-2">
-                        <i class="fas fa-file-excel me-2"></i> Export Interaction History
+                <div class="mt-4 pt-4 border-top d-grid gap-2">
+                    <a href="{{ url_for('dashboard.download_report', lead_id=lead.ID) }}" class="btn btn-outline-primary py-2 shadow-sm border-light">
+                        <i class="fas fa-file-excel me-2"></i> Export History
                     </a>
-                    <a href="{{ url_for('dashboard.delete_lead', lead_id=lead.ID) }}" class="btn btn-outline-danger btn-sm py-2" onclick="return confirm('Permanently delete this customer?')">
-                        <i class="fas fa-trash-alt me-2"></i> Delete Customer
+                    <a href="{{ url_for('dashboard.delete_lead', lead_id=lead.ID) }}" class="btn btn-outline-danger py-2 shadow-sm border-light" onclick="return confirm('Permanently delete this customer?')">
+                        <i class="fas fa-trash-alt me-2"></i> Remove Lead
                     </a>
                 </div>
                 {% endif %}
             </div>
         </div>
     </div>
+
+    <!-- Main Content -->
+    <div class="col-12 col-lg-8">
+        <div class="card border-0 shadow-md">
+            <div class="card-header bg-white border-bottom p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="fw-800 mb-0 d-flex align-items-center">
+                        <span class="bg-primary-soft text-primary rounded-3 p-2 me-3 d-none d-md-inline-block">
+                            <i class="fas fa-user-edit fa-xs"></i>
+                        </span>
+                        Profile Intelligence
+                    </h4>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm btn-light border py-1 px-3">Back</a>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="row g-4">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1" style="font-size: 0.65rem;">Full Name</label>
+                            <input type="text" name="Name" class="form-control bg-light border-0 py-2 fw-medium" value="{{ lead.Name if lead else '' }}" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1" style="font-size: 0.65rem;">Primary Phone</label>
+                            <input type="text" name="Phone" class="form-control bg-light border-0 py-2 fw-medium" value="{{ lead.Phone if lead else '' }}" required>
+                        </div>
+                        
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1" style="font-size: 0.65rem;">Current Profession</label>
+                            <input type="text" name="Profession" class="form-control border-light" value="{{ lead.Profession if lead else '' }}">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1" style="font-size: 0.65rem;">Preferred Location</label>
+                            <input type="text" name="PreferredLocation" class="form-control border-light" value="{{ lead.PreferredLocation if lead else '' }}">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold small text-muted text-uppercase mb-1" style="font-size: 0.65rem;">Ownership Transfer</label>
+                            <select name="Agent" class="form-select border-light">
+                                {% set current_agent_id = lead.Agent if lead else session.user.Username %}
+                                {% set current_agent_name = current_agent_id %}
+                                {% for a in agents %}
+                                    {% if a.Username == current_agent_id %}{% set current_agent_name = a.Name or a.Username %}{% endif %}
+                                {% endfor %}
+                                <option value="{{ current_agent_id }}" selected>Keep: {{ current_agent_name }}</option>
+                                {% for agent in agents %}
+                                    {% if agent.Username != current_agent_id %}
+                                    <option value="{{ agent.Username }}">{{ agent.Name or agent.Username }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 mt-5">
+                            <div class="p-4 rounded-4 bg-primary-soft border border-primary border-opacity-10 position-relative overflow-hidden">
+                                <div class="position-absolute top-0 end-0 p-3 opacity-10">
+                                    <i class="fas fa-headset fa-4x text-primary"></i>
+                                </div>
+                                <h6 class="fw-800 mb-4 text-primary text-uppercase" style="font-size: 0.8rem; letter-spacing: 0.05em;">Log New Interaction</h6>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label smaller text-muted fw-bold" style="font-size: 0.6rem;">RECORDING SOURCE</label>
+                                        <input type="url" name="RecordingURL" class="form-control form-control-sm border-light" placeholder="URL here...">
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label smaller text-muted fw-bold" style="font-size: 0.6rem;">CALL DATE</label>
+                                        <input type="date" name="CallDate" class="form-control form-control-sm border-light">
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label smaller text-muted fw-bold" style="font-size: 0.6rem;">INTEREST LEVEL</label>
+                                        <select name="InterestStar" class="form-select form-select-sm border-light">
+                                            <option value="1" {% if lead and lead.InterestStar|int == 1 %}selected{% endif %}>⭐ Very Cold</option>
+                                            <option value="2" {% if lead and lead.InterestStar|int == 2 %}selected{% endif %}>⭐⭐ Cold</option>
+                                            <option value="3" {% if lead and lead.InterestStar|int == 3 %}selected{% endif %}>⭐⭐⭐ Warm</option>
+                                            <option value="4" {% if lead and lead.InterestStar|int == 4 %}selected{% endif %}>⭐⭐⭐⭐ Hot</option>
+                                            <option value="5" {% if lead and lead.InterestStar|int == 5 %}selected{% endif %}>⭐⭐⭐⭐⭐ Very Hot</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label smaller text-muted fw-bold" style="font-size: 0.6rem;">INTERACTION SUMMARY</label>
+                                        <textarea name="LastNote" class="form-control border-light" rows="3" placeholder="What was discussed?"></textarea>
+                                    </div>
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label smaller text-muted fw-bold" style="font-size: 0.6rem;">NEXT FOLLOW-UP SCHEDULE</label>
+                                        <input type="date" name="FollowUpDate" class="form-control form-control-sm border-light" value="{{ lead.FollowUpDate if lead else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg px-5 shadow-md w-100 w-md-auto">
+                            <i class="fas fa-save me-2"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if history %}
+        <div class="mt-5 mb-5">
+            <h5 class="fw-800 mb-4 d-flex align-items-center">
+                <i class="fas fa-history me-3 text-primary opacity-50"></i>Interaction Timeline
+            </h5>
+            <div class="card border-0 shadow-md">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Call Date</th>
+                                <th class="d-none d-md-table-cell">Agent</th>
+                                <th>Summary</th>
+                                <th class="text-center">Details</th>
+                                <th class="text-center">Rating</th>
+                                <th class="text-center">Follow Up</th>
+                                <th class="text-end pe-4">Recording</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in history %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="fw-bold text-dark">{{ entry.CallDate if entry.CallDate else '-' }}</div>
+                                    <div class="smaller text-muted d-md-none">{{ entry.Agent }}</div>
+                                </td>
+                                <td class="d-none d-md-table-cell"><span class="badge bg-light text-dark">{{ entry.Agent }}</span></td>
+                                <td class="text-muted small text-truncate" style="max-width: 150px;">{{ entry.Note or '-' }}</td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('dashboard.history_detail', history_id=entry.ID) }}" target="_blank" class="text-primary" title="View Full Summary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-warning small fw-bold">{{ entry.InterestStar }}⭐</span>
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-danger fw-bold small">{{ entry.FollowUpDate if entry.FollowUpDate else '-' }}</span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if entry.RecordingURL %}
+                                    <a href="{{ entry.RecordingURL }}" target="_blank" class="btn btn-xs btn-primary-soft text-primary p-2 rounded-circle">
+                                        <i class="fas fa-play fa-xs"></i>
+                                    </a>
+                                    {% else %}-{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
 
     <!-- Main Content -->
     <div class="col-lg-8">
@@ -66,11 +231,11 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-secondary">FULL NAME</label>
-                            <input type="text" name="Name" class="form-control bg-light border-0 py-2" value="{{ lead.Name if lead else '' }}" required>
+                            <input type="text" name="Name" class="form-control bg-light border-0 py-2" value="{{ lead.Name if lead else '' }}">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-secondary">PHONE NUMBER</label>
-                            <input type="text" name="Phone" class="form-control bg-light border-0 py-2" value="{{ lead.Phone if lead else '' }}" required {% if lead %}readonly{% endif %}>
+                            <input type="text" name="Phone" class="form-control bg-light border-0 py-2" value="{{ lead.Phone if lead else '' }}">
                         </div>
                         
                         <div class="col-md-4">
@@ -102,11 +267,15 @@
                             <div class="p-4 rounded-4 bg-primary-subtle border border-primary border-opacity-10">
                                 <h6 class="fw-bold mb-3 text-primary"><i class="fas fa-headset me-2"></i>Log New Interaction</h6>
                                 <div class="row g-3">
-                                    <div class="col-md-7">
+                                    <div class="col-md-4">
                                         <label class="form-label smaller text-muted">RECORDING LINK</label>
                                         <input type="url" name="RecordingURL" class="form-control form-control-sm" placeholder="Paste link here...">
                                     </div>
-                                    <div class="col-md-5">
+                                    <div class="col-md-4">
+                                        <label class="form-label smaller text-muted">DATE OF CALL</label>
+                                        <input type="date" name="CallDate" class="form-control form-control-sm">
+                                    </div>
+                                    <div class="col-md-4">
                                         <label class="form-label smaller text-muted">INTEREST RATING</label>
                                         <select name="InterestStar" class="form-select form-select-sm">
                                             <option value="1" {% if lead and lead.InterestStar|int == 1 %}selected{% endif %}>⭐ Very Cold</option>
@@ -123,10 +292,9 @@
                                         <label class="form-label smaller text-muted">NEXT FOLLOW-UP</label>
                                         <input type="date" name="FollowUpDate" class="form-control form-control-sm" value="{{ lead.FollowUpDate if lead else '' }}">
                                     </div>
-                                    <div class="col-md-6">
-                                        <div class="form-check pt-4">
-                                            <input class="form-check-input" type="checkbox" name="log_call" id="logCall_check">
-                                            <label class="form-check-label fw-bold small text-primary" for="logCall_check"><i class="fas fa-check-circle me-1"></i> Log as a completed call</label>
+                                    <div class="col-md-12">
+                                        <div class="alert alert-info py-2 px-3 mb-0 smaller border-0 bg-info-subtle text-info">
+                                            <i class="fas fa-info-circle me-1"></i> Saving this profile will automatically log a new history entry if interaction details are provided.
                                         </div>
                                     </div>
                                 </div>
@@ -145,27 +313,54 @@
 
         {% if history %}
         <div class="mt-5 mb-5">
-            <h5 class="fw-800 mb-4"><i class="fas fa-stream me-2 text-primary"></i>Activity Timeline</h5>
-            <div class="timeline ps-4 position-relative">
-                <div class="border-start border-2 position-absolute h-100" style="left: 0.5rem; top: 0; border-color: var(--border) !important;"></div>
-                
-                {% for entry in history %}
-                <div class="mb-4 position-relative">
-                    <div class="position-absolute bg-primary rounded-circle" style="left: -1.75rem; top: 0.5rem; width: 12px; height: 12px; border: 3px solid white; box-shadow: 0 0 0 2px var(--primary);"></div>
-                    <div class="card border-0 shadow-sm p-3 mb-0">
-                        <div class="d-flex justify-content-between mb-2">
-                            <div class="small fw-bold text-primary">{{ entry.Agent }}</div>
-                            <div class="smaller text-muted">{{ entry.Timestamp }}</div>
-                        </div>
-                        <p class="mb-2 text-dark small">{{ entry.Note or 'System update' }}</p>
-                        {% if entry.RecordingURL %}
-                        <a href="{{ entry.RecordingURL }}" target="_blank" class="smaller text-decoration-none fw-bold text-danger">
-                            <i class="fas fa-play-circle me-1"></i> Listen to Recording
-                        </a>
-                        {% endif %}
-                    </div>
+            <h5 class="fw-800 mb-4"><i class="fas fa-list-alt me-2 text-primary"></i>Interaction Report History</h5>
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle" style="font-size: 0.85rem;">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Call Date</th>
+                                <th>Agent</th>
+                                <th>Note / Summary</th>
+                                <th class="text-center">Details</th>
+                                <th class="text-center">Interest</th>
+                                <th class="text-center">Follow Up</th>
+                                <th class="text-center">Recording</th>
+                                <th class="pe-4 text-end">Log Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in history %}
+                            <tr>
+                                <td class="ps-4 fw-bold text-primary">{{ entry.CallDate if entry.CallDate else '-' }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ entry.Agent }}</span></td>
+                                <td style="max-width: 250px;" class="text-truncate">{{ entry.Note or '-' }}</td>
+                                <td class="text-center">
+                                    <a href="{{ url_for('dashboard.history_detail', history_id=entry.ID) }}" target="_blank" class="btn btn-xs btn-light border px-2">
+                                        <i class="fas fa-external-link-alt me-1"></i> View
+                                    </a>
+                                </td>
+                                <td class="text-center">
+                                    {% if entry.InterestStar %}
+                                    <span class="text-warning">{% for i in range(entry.InterestStar|int) %}⭐{% endfor %}</span>
+                                    {% else %}-{% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="text-danger fw-bold">{{ entry.FollowUpDate if entry.FollowUpDate else '-' }}</span>
+                                </td>
+                                <td class="text-center">
+                                    {% if entry.RecordingURL %}
+                                    <a href="{{ entry.RecordingURL }}" target="_blank" class="btn btn-xs btn-outline-danger px-2 d-flex align-items-center justify-content-center gap-1">
+                                        <i class="fas fa-play" style="font-size: 0.6rem;"></i> <span>View</span>
+                                    </a>
+                                    {% else %}-{% endif %}
+                                </td>
+                                <td class="pe-4 text-end text-muted smaller">{{ entry.Timestamp }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-                {% endfor %}
             </div>
         </div>
         {% endif %}

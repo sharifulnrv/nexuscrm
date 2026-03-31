@@ -36,6 +36,65 @@ class DBHandler:
         conn.close()
         return users
 
+    def get_user_by_username(self, username):
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+        row = cursor.fetchone()
+        conn.close()
+        if not row: return None
+        u = dict(row)
+        return {
+            'Username': u.get('username'),
+            'Password': u.get('password'),
+            'Role': u.get('role'),
+            'Name': u.get('name'),
+            'Phone': u.get('phone')
+        }
+
+    def update_user(self, username, data):
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        
+        new_username = data.get('Username') or data.get('username')
+        
+        fields = []
+        params = []
+        
+        mapping = {
+            'username': ['Username', 'username'],
+            'password': ['Password', 'password'],
+            'name': ['Name', 'name'],
+            'phone': ['Phone', 'phone']
+        }
+        
+        for db_col, keys in mapping.items():
+            for k in keys:
+                if k in data and data[k]: # Don't update empty strings for password if not provided
+                    fields.append(f"{db_col}=?")
+                    params.append(data[k])
+                    break
+        
+        if not fields:
+            conn.close()
+            return False
+            
+        sql = f"UPDATE users SET {', '.join(fields)} WHERE username=?"
+        params.append(username)
+        
+        cursor.execute(sql, params)
+        
+        # Cascading updates if username changed
+        if new_username and new_username != username:
+            cursor.execute("UPDATE leads SET agent=? WHERE agent=?", (new_username, username))
+            cursor.execute("UPDATE notes_history SET agent=? WHERE agent=?", (new_username, username))
+            cursor.execute("UPDATE handovers SET from_agent=? WHERE from_agent=?", (new_username, username))
+            cursor.execute("UPDATE handovers SET to_agent=? WHERE to_agent=?", (new_username, username))
+
+        conn.commit()
+        conn.close()
+        return True
+
     def authenticate_user(self, username, password):
         conn = self._get_connection()
         cursor = conn.cursor()
@@ -72,13 +131,18 @@ class DBHandler:
             'Status': d.get('status'),
             'Agent': d.get('agent'),
             'Timestamp': d.get('timestamp'),
-            'LastUpdated': d.get('last_updated')
+            'LastUpdated': d.get('last_updated'),
+            'LastCallDate': d.get('last_call_date')
         }
 
     def get_all_leads(self):
         conn = self._get_connection()
         cursor = conn.cursor()
-        cursor.execute("SELECT * FROM leads")
+        cursor.execute("""
+            SELECT l.*, 
+                   (SELECT MAX(call_date) FROM notes_history WHERE lead_id = l.id AND call_date != '') as last_call_date
+            FROM leads l
+        """)
         rows = cursor.fetchall()
         leads = [self._map_lead_row(r) for r in rows]
         conn.close()
@@ -101,7 +165,7 @@ class DBHandler:
             'profession': ['profession', 'Profession'],
             'location': ['location', 'Location'],
             'address': ['address', 'Address'],
-            'note': ['note', 'Note'],
+            'note': ['note', 'Note', 'LastNote'],
             'interest_star': ['interest_star', 'InterestStar'],
             'visit_interested': ['visit_interested', 'VisitInterested'],
             'visit_date': ['visit_date', 'VisitDate'],
@@ -185,17 +249,56 @@ class DBHandler:
             history.append(self._map_history_row(row))
         return history
 
+    def get_history_by_id(self, history_id):
+        conn = self._get_connection()
+        query = """
+            SELECT h.*, l.name as lead_name, l.phone as lead_phone
+            FROM notes_history h
+            LEFT JOIN leads l ON h.lead_id = l.id
+            WHERE h.id = ?
+        """
+        df = pd.read_sql_query(query, conn, params=(history_id,))
+        conn.close()
+        
+        if df.empty: return None
+        row = df.iloc[0]
+        d = self._map_history_row(row)
+        d['CustomerName'] = row.get('lead_name')
+        d['CustomerPhone'] = row.get('lead_phone')
+        return d
+
+    def get_global_history(self):
+        conn = self._get_connection()
+        query = """
+            SELECT h.*, l.name as lead_name, l.phone as lead_phone
+            FROM notes_history h
+            LEFT JOIN leads l ON h.lead_id = l.id
+            ORDER BY h.timestamp DESC
+        """
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        
+        history = []
+        for _, row in df.iterrows():
+            d = self._map_history_row(row)
+            d['CustomerName'] = row.get('lead_name')
+            d['CustomerPhone'] = row.get('lead_phone')
+            history.append(d)
+        return history
+
     def _map_history_row(self, row):
         if row is None: return None
         d = dict(row)
         return {
+            'ID': d.get('id'),
             'LeadID': d.get('lead_id'),
             'Timestamp': d.get('timestamp'),
             'Agent': d.get('agent'),
             'Note': d.get('note'),
             'VisitInterested': d.get('visit_interested'),
             'VisitDate': d.get('visit_date'),
-            'CallRecording': d.get('call_recording'),
+            'RecordingURL': d.get('call_recording'),
+            'CallDate': d.get('call_date'),
             'FollowUpDate': d.get('followup_date'),
             'InterestStar': d.get('interest_star')
         }
@@ -210,10 +313,11 @@ class DBHandler:
         mapping = {
             'lead_id': ['lead_id', 'LeadID'],
             'agent': ['agent', 'Agent'],
-            'note': ['note', 'Note'],
+            'note': ['note', 'Note', 'LastNote'],
             'visit_interested': ['visit_interested', 'VisitInterested'],
             'visit_date': ['visit_date', 'VisitDate'],
-            'call_recording': ['call_recording', 'CallRecording'],
+            'call_recording': ['call_recording', 'CallRecording', 'RecordingURL'],
+            'call_date': ['call_date', 'CallDate'],
             'followup_date': ['followup_date', 'FollowUpDate'],
             'interest_star': ['interest_star', 'InterestStar']
         }
@@ -315,3 +419,11 @@ class DBHandler:
         conn.commit()
         conn.close()
         return True, f"Handover {action.lower()} completed."
+
+    def update_user_password(self, username, new_password):
+        conn = self._get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE users SET password=? WHERE username=?", (new_password, username))
+        conn.commit()
+        conn.close()
+        return True

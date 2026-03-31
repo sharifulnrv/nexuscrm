@@ -14,28 +14,32 @@
     <style>
         :root {
             --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --secondary: #64748b;
-            --accent: #06b6d4;
+            --primary-soft: #eef2ff;
+            --secondary: #6366f1;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             --background: #f8fafc;
             --surface: #ffffff;
-            --text-main: #1e293b;
+            --text-main: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
-            --radius: 12px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            --glass: rgba(255, 255, 255, 0.85);
+            --radius-sm: 8px;
+            --radius: 16px;
+            --radius-lg: 24px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --glass: rgba(255, 255, 255, 0.8);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--background);
             color: var(--text-main);
-            line-height: 1.6;
+            letter-spacing: -0.011em;
+            line-height: 1.5;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
         }
 
         .navbar {
@@ -43,130 +47,101 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            padding: 0.85rem 0;
-            z-index: 1000;
+            padding: 0.75rem 0;
+            z-index: 1050;
         }
 
         .navbar-brand {
             font-weight: 800;
-            letter-spacing: -0.5px;
-            color: var(--primary) !important;
-            font-size: 1.5rem;
+            letter-spacing: -0.025em;
+            color: var(--text-main) !important;
         }
 
         .nav-link {
-            transition: color 0.2s;
-            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-muted) !important;
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 1rem !important;
+            transition: all 0.2s;
         }
 
-        .nav-link:hover {
+        .nav-link:hover, .nav-link.active {
             color: var(--primary) !important;
+            background: var(--primary-soft);
         }
 
         .card {
             border: 1px solid var(--border);
             border-radius: var(--radius);
             box-shadow: var(--shadow-sm);
-            transition: transform 0.2s, box-shadow 0.2s;
             background: var(--surface);
-            margin-bottom: 1.5rem;
-        }
-
-        .card-header {
-            background: transparent;
-            border-bottom: 1px solid var(--border);
-            padding: 1.25rem 1.5rem;
+            overflow: hidden;
         }
 
         .btn {
-            border-radius: 8px;
-            padding: 0.6rem 1.25rem;
+            border-radius: 10px;
+            padding: 0.625rem 1.25rem;
             font-weight: 600;
+            font-size: 0.875rem;
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .btn-primary {
-            background-color: var(--primary);
-            border-color: var(--primary);
+            background: var(--primary);
+            border: none;
         }
 
         .btn-primary:hover {
-            background-color: var(--primary-hover);
+            background: #4338ca;
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
         }
 
-        .table {
-            vertical-align: middle;
+        .table-responsive {
+            border-radius: var(--radius);
+            scrollbar-width: thin;
         }
 
         .table thead th {
-            background-color: #f1f5f9;
+            background: #f8fafc;
+            color: var(--text-muted);
+            font-size: 0.625rem;
+            font-weight: 700;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-top: none;
+            padding: 1rem 1.25rem;
+        }
+
+        .badge-premium {
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
             font-size: 0.7rem;
             font-weight: 700;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem;
+            text-transform: uppercase;
         }
 
-        .table tbody td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .navbar-brand { font-size: 1.1rem; }
+            .container { padding-left: 1.25rem; padding-right: 1.25rem; }
+            .card-body { padding: 1.25rem; }
+            .btn { width: 100%; margin-bottom: 0.5rem; }
+            .mobile-stack { flex-direction: column !important; }
         }
 
-        .badge {
-            padding: 0.5em 0.8em;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.75rem;
+        /* Premium Animations */
+        .page-transition {
+            animation: slideUp 0.4s cubic-bezier(0, 0, 0.2, 1) forwards;
         }
 
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-
-        /* Glass Accents */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(6px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* Sidebar/Stat Card Styles */
-        .stat-card {
-            background: var(--surface);
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            border-left: 4px solid var(--primary);
-        }
-
-        /* Avatar */
-        .avatar-sm {
-            width: 36px;
-            height: 36px;
-            background: var(--primary);
-            color: white;
-            border-radius: 10px;
-            display: grid;
-            place-items: center;
-            font-weight: 700;
-        }
-
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
+    <!-- ApexCharts for Premium Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg sticky-top mb-4">
@@ -213,8 +188,8 @@
                             </div>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3 p-2 rounded-4">
-                            <li><a class="dropdown-item rounded-3 py-2" href="#"><i class="far fa-user-circle me-2"></i>My Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item rounded-3 py-2" href="{{ url_for('dashboard.edit_profile') }}"><i class="fas fa-id-card me-2 small"></i>My Profile</a></li>
+                            <li><hr class="dropdown-divider opacity-50"></li>
                             <li><a class="dropdown-item rounded-3 py-2 text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
                         </ul>
                     </div>
@@ -243,6 +218,28 @@
 
         {% block content %}{% endblock %}
     </div>
+
+    <footer class="mt-5 pb-5 pt-4 border-top">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-6 mb-3 mb-md-0 text-center text-md-start">
+                    <div class="smaller text-muted fw-bold text-uppercase mb-1" style="font-size: 0.6rem; letter-spacing: 0.1em;">Engineered by</div>
+                    <div class="fw-bold text-dark">Shariful Islam</div>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="https://github.com/pythonicshariful" target="_blank" class="text-muted text-decoration-none me-3 transition-all hover-translate-y d-inline-block">
+                        <i class="fab fa-github fa-lg"></i>
+                    </a>
+                    <a href="mailto:pythonicshariful@gmail.com" class="text-muted text-decoration-none transition-all hover-translate-y d-inline-block">
+                        <i class="fas fa-envelope fa-lg"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <div class="smaller text-muted" style="font-size: 0.65rem;">&copy; 2026 NexusCRM. All rights reserved.</div>
+            </div>
+        </div>
+    </footer>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

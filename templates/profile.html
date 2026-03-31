@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row align-items-center justify-content-center page-transition" style="min-height: 70vh;">
+    <div class="col-12 col-md-10 col-lg-6">
+        <div class="card border-0 shadow-md rounded-lg overflow-hidden">
+            <div class="bg-primary p-4 p-md-5 text-center text-white position-relative">
+                <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 24px 24px;"></div>
+                <div class="avatar-lg bg-white bg-opacity-20 rounded-circle mx-auto mb-3 d-grid place-items-center shadow-lg" style="width: 80px; height: 80px;">
+                    <i class="fas fa-id-badge fa-2x"></i>
+                </div>
+                <h3 class="fw-800 mb-1 letter-tight">Identity Hub</h3>
+                <p class="opacity-75 mb-0 small fw-medium">Manage your professional NexusCRM profile</p>
+            </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="POST">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Professional Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="fas fa-user text-muted opacity-50"></i></span>
+                                <input type="text" name="name" class="form-control bg-light border-0" value="{{ user.Name }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Contact Intelligence</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="fas fa-phone text-muted opacity-50"></i></span>
+                                <input type="text" name="phone" class="form-control bg-light border-0" value="{{ user.Phone }}">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Unique Identity (Username)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="fas fa-fingerprint text-muted opacity-50"></i></span>
+                                <input type="text" name="username" class="form-control bg-light border-0 fw-bold" value="{{ user.Username }}" required>
+                            </div>
+                            <div class="form-text smaller opacity-50 mt-2">Changing your identity will update all associated call logs and handovers.</div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-5 opacity-5">
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Current Security Verification</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-0"><i class="fas fa-shield-alt text-muted opacity-50"></i></span>
+                            <input type="password" name="old_password" class="form-control bg-light border-0" placeholder="Verification required to save changes" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">New Security Key</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="fas fa-key text-muted opacity-50"></i></span>
+                                <input type="password" name="new_password" class="form-control bg-light border-0" placeholder="Optional">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold text-muted small text-uppercase mb-2" style="font-size: 0.65rem; letter-spacing: 0.05em;">Confirm New Key</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="fas fa-check-circle text-muted opacity-50"></i></span>
+                                <input type="password" name="confirm_password" class="form-control bg-light border-0" placeholder="Optional">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg py-3 shadow-md fw-800">
+                            SYNCHRONIZE IDENTITY <i class="fas fa-sync-alt ms-2 opacity-50"></i>
+                        </button>
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-link text-muted smaller text-decoration-none mt-2">
+                            Return to Portfolio Overview
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

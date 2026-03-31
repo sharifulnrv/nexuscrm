@@ -11,6 +11,21 @@ from werkzeug.utils import secure_filename
 dashboard_bp = Blueprint('dashboard', __name__)
 db = get_db_handler()
 
+@dashboard_bp.route('/admin/history')
+@admin_required
+def admin_history():
+    history = db.get_global_history()
+    return render_template('admin_history.html', history=history)
+
+@dashboard_bp.route('/history/<int:history_id>')
+@login_required
+def history_detail(history_id):
+    entry = db.get_history_by_id(history_id)
+    if not entry:
+        flash("History record not found.", "danger")
+        return redirect(url_for('dashboard.index'))
+    return render_template('history_detail.html', entry=entry)
+
 @dashboard_bp.route('/')
 @login_required
 def index():
@@ -25,32 +40,61 @@ def index():
         session.modified = True
         user = session['user']
     
-    df = db.get_all_leads()
+    df_all = db.get_all_leads()
+    
+    # Calculate Global Stats (Static for Dashboard Header)
+    if not df_all.empty:
+        total_leads = len(df_all)
+        hot_leads = len(df_all[df_all['InterestStar'].astype(str).isin(['4', '5'])])
+        warm_leads = len(df_all[df_all['InterestStar'].astype(str) == '3'])
+    else:
+        total_leads = hot_leads = warm_leads = 0
+
+    df = df_all.copy()
     
     # Search functionality
     q = request.args.get('q', '').strip()
-    if q:
-        if not df.empty:
+    
+    # Advanced Filters
+    f_last_call = request.args.get('last_call', '').strip()
+    f_followup = request.args.get('followup', '').strip()
+    f_rating = request.args.get('rating', '').strip()
+    f_agent = request.args.get('agent', '').strip()
+    f_fresh = request.args.get('fresh', '').strip()
+
+    if not df.empty:
+        if q:
             df = df[
                 df['Name'].str.contains(q, case=False, na=False) | 
                 df['Phone'].astype(str).str.contains(q, case=False, na=False)
             ]
-            
+        
+        if f_last_call:
+            df = df[df['LastCallDate'] == f_last_call]
+        if f_followup:
+            df = df[df['FollowUpDate'] == f_followup]
+        if f_rating:
+            df = df[df['InterestStar'].astype(str) == f_rating]
+        if f_agent:
+            df = df[df['Agent'] == f_agent]
+        if f_fresh == '1':
+            df = df[(df['LastCallDate'].isna()) | (df['LastCallDate'] == '')]
+
     if user['Role'] == Config.ROLE_AGENT:
         # Agents see only their leads
         if not df.empty:
             df = df[df['Agent'] == user['Username']]
     
-    # Simple stats for dashboard
+    # Stats for Agents (can be filtered)
     if not df.empty:
-        stats = {
+        agent_stats_summary = {
             'total': len(df),
             'hot': len(df[df['InterestStar'].astype(str).isin(['4', '5'])]),
             'warm': len(df[df['InterestStar'].astype(str) == '3']),
             'cold': len(df[df['InterestStar'].astype(str).isin(['1', '2'])])
         }
     else:
-        stats = {'total': 0, 'hot': 0, 'warm': 0, 'cold': 0}
+        agent_stats_summary = {'total': 0, 'hot': 0, 'warm': 0, 'cold': 0}
     
     # Today's Activity Report
     today = datetime.now().strftime("%Y-%m-%d")
@@ -130,10 +174,122 @@ def index():
                 if h_from == username:
                     sent_handovers.append(h)
 
+    # Calculate percentages for UI progress bars
+    hot_percent = (hot_leads / total_leads * 100) if total_leads > 0 else 0
+    warm_percent = (warm_leads / total_leads * 100) if total_leads > 0 else 0
+    overdue_percent = (len(overdue) / total_leads * 100) if total_leads > 0 else 0
+
+    # Premium Analytics Data (ApexCharts)
+    rating_dist = []
+    for r in range(0, 6):
+        count = len(df[df['InterestStar'].astype(str) == str(r)]) if not df.empty else 0
+        rating_dist.append(count)
+    
+    agent_dist = []
     if user['Role'] == Config.ROLE_ADMIN:
-        return render_template('dashboard_admin.html', stats=stats, daily_report=daily_report, agent_stats=agent_stats, leads=leads, today_tasks=today_tasks, overdue=overdue, q=q, pending_handovers=pending_handovers)
+        agents_list = [u for u in db.get_users() if u['Role'] == Config.ROLE_AGENT]
+        for a in agents_list:
+            a_count = len(df_all[df_all['Agent'] == a['Username']]) if not df_all.empty else 0
+            agent_dist.append({'label': a['Name'] if a.get('Name') else a['Username'], 'value': a_count})
     else:
-        return render_template('dashboard_agent.html', stats=stats, daily_report=daily_report, leads=leads, today_tasks=today_tasks, overdue=overdue, q=q, pending_handovers=pending_handovers, sent_handovers=sent_handovers)
+        # For agent, show call trend (last 7 days) if needed, but for now just their rating dist
+        pass
+
+    agents = [u for u in db.get_users() if u['Role'] == Config.ROLE_AGENT]
+    
+    if user['Role'] == Config.ROLE_ADMIN:
+        return render_template('dashboard_admin.html', 
+                             total_leads=total_leads,
+                             hot_leads=hot_leads,
+                             warm_leads=warm_leads,
+                             overdue_percent=overdue_percent,
+                             rating_dist=rating_dist,
+                             agent_dist=agent_dist,
+                             stats=agent_stats_summary, 
+                             daily_report=daily_report, 
+                             agent_stats=agent_stats, 
+                             leads=leads, 
+                             today_tasks=today_tasks, 
+                             overdue=overdue, 
+                             q=q, 
+                             last_call=f_last_call,
+                             followup=f_followup,
+                             rating=f_rating,
+                             agent_filter=f_agent,
+                             fresh=f_fresh,
+                             agents=agents,
+                             pending_handovers=pending_handovers)
+    else:
+        return render_template('dashboard_agent.html', 
+                             total_leads=total_leads,
+                             hot_leads=hot_leads,
+                             warm_leads=warm_leads,
+                             hot_percent=hot_percent,
+                             warm_percent=warm_percent,
+                             overdue_percent=overdue_percent,
+                             rating_dist=rating_dist,
+                             stats=agent_stats_summary, 
+                             daily_report=daily_report, 
+                             leads=leads, 
+                             today_tasks=today_tasks, 
+                             overdue=overdue, 
+                             q=q, 
+                             last_call=f_last_call,
+                             followup=f_followup,
+                             rating=f_rating,
+                             fresh=f_fresh,
+                             pending_handovers=pending_handovers, 
+                             sent_handovers=sent_handovers)
+
+@dashboard_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    user = session['user']
+    if request.method == 'POST':
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        new_username = request.form.get('username')
+        old_password = request.form.get('old_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+        
+        current_password = str(user['Password'])
+        current_username = user['Username']
+        
+        if old_password != current_password:
+            flash("Current password verification failed.", "danger")
+        elif new_password and new_password != confirm_password:
+            flash("New password and confirmation do not match.", "warning")
+        else:
+            # Check if username is changing and if it's available
+            if new_username and new_username != current_username:
+                existing_users = db.get_users()
+                if any(u['Username'] == new_username for u in existing_users):
+                    flash(f"Identity '{new_username}' is already in use.", "warning")
+                    return render_template('profile.html', user=user)
+
+            updated_data = {
+                'Name': name,
+                'Phone': phone,
+                'Username': new_username if new_username else current_username,
+            }
+            if new_password:
+                updated_data['Password'] = new_password
+            
+            if db.update_user(current_username, updated_data):
+                # Refresh session user
+                users = db.get_users()
+                updated_user = next((u for u in users if u['Username'] == (new_username if new_username else current_username)), None)
+                if updated_user:
+                    session['user'] = updated_user
+                    session.modified = True
+                
+                flash("Profile and security credentials updated successfully.", "success")
+                return redirect(url_for('dashboard.index'))
+            else:
+                flash("Failed to update profile.", "danger")
+            
+    return render_template('profile.html', user=user)
 
 @dashboard_bp.route('/handover/respond/<lead_id>/<action>')
 @login_required
@@ -192,14 +348,24 @@ def edit_lead(lead_id):
                 flash(message, "info")
             updated_data['Agent'] = lead_dict['Agent']
             
-        if is_call:
+        # Log history only if meaningful interaction data is provided
+        has_interaction = any([
+            updated_data.get('LastNote'),
+            updated_data.get('CallDate'),
+            updated_data.get('RecordingURL'),
+            updated_data.get('FollowUpDate')
+        ])
+        
+        if has_interaction:
             db.add_history_entry(lead_id, {
                 'Agent': session['user']['Username'],
-                'Note': updated_data.get('Note', 'Call logged'),
+                'Note': updated_data.get('LastNote') or 'Interaction logged',
                 'VisitInterested': updated_data.get('VisitInterested'),
                 'VisitDate': updated_data.get('VisitDate'),
                 'FollowUpDate': updated_data.get('FollowUpDate'),
-                'InterestStar': updated_data.get('InterestStar')
+                'InterestStar': updated_data.get('InterestStar'),
+                'CallDate': updated_data.get('CallDate'),
+                'RecordingURL': updated_data.get('RecordingURL')
             })
 
         if db.update_lead(lead_id, updated_data):
@@ -248,13 +414,38 @@ def download_report(lead_id):
 @login_required
 def export():
     df = db.get_all_leads()
+    
+    # Get filters from URL
+    q = request.args.get('q', '').strip()
+    f_last_call = request.args.get('last_call', '').strip()
+    f_followup = request.args.get('followup', '').strip()
+    f_rating = request.args.get('rating', '').strip()
+    f_agent = request.args.get('agent', '').strip()
+    f_fresh = request.args.get('fresh', '').strip()
+
+    if not df.empty:
+        if q:
+            df = df[df['Name'].str.contains(q, case=False, na=False) | df['Phone'].astype(str).str.contains(q, case=False, na=False)]
+        if f_last_call:
+            df = df[df['LastCallDate'] == f_last_call]
+        if f_followup:
+            df = df[df['FollowUpDate'] == f_followup]
+        if f_rating:
+            df = df[df['InterestStar'].astype(str) == f_rating]
+        if f_agent:
+            df = df[df['Agent'] == f_agent]
+        if f_fresh == '1':
+            df = df[(df['LastCallDate'].isna()) | (df['LastCallDate'] == '')]
+
     if session['user']['Role'] == Config.ROLE_AGENT:
         df = df[df['Agent'] == session['user']['Username']]
     
     # Sort by LastUpdated for export as well
     if not df.empty:
         df['LastUpdated_dt'] = pd.to_datetime(df['LastUpdated'], errors='coerce')
-        df = df.sort_values(by='LastUpdated_dt', ascending=False).drop(columns=['LastUpdated_dt'])
+        df = df.sort_values(by='LastUpdated_dt', ascending=False)
+        if 'LastUpdated_dt' in df.columns:
+            df = df.drop(columns=['LastUpdated_dt'])
 
     excel_path = os.path.join(Config.UPLOAD_FOLDER, 'leads_export.xlsx')
     export_to_excel(df, excel_path)
@@ -383,3 +574,22 @@ def delete_agent(username):
     conn.close()
     flash("Agent deleted.", "success")
     return redirect(url_for('dashboard.manage_agents'))
+
+@dashboard_bp.route('/admin/agent/edit/<username>', methods=['GET', 'POST'])
+@admin_required
+def edit_agent(username):
+    agent = db.get_user_by_username(username)
+    if not agent:
+        flash("Agent not found.", "danger")
+        return redirect(url_for('dashboard.manage_agents'))
+    
+    if request.method == 'POST':
+        updated_data = request.form.to_dict()
+        # Only update if fields were changed
+        if db.update_user(username, updated_data):
+            flash(f"Agent {username} updated successfully.", "success")
+            return redirect(url_for('dashboard.manage_agents'))
+        else:
+            flash("No changes made or failed to update.", "warning")
+            
+    return render_template('admin_agent_form.html', agent=agent)

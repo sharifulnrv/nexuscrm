@@ -1,0 +1,84 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row align-items-center mb-4">
+    <div class="col-md-6 col-sm-12">
+        <h2 class="fw-800 mb-1">Global Interaction Audit</h2>
+        <p class="text-muted small">Comprehensive log of all agent activities and interactions.</p>
+    </div>
+    <div class="col-md-6 col-sm-12 text-md-end mt-3 mt-md-0">
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-light border shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
+    <div class="card-header bg-white p-4 pb-3">
+        <h5 class="fw-bold mb-0">Organization-wide Activity Log</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle" style="font-size: 0.85rem;">
+            <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">Call Date</th>
+                    <th>Agent</th>
+                    <th>Customer</th>
+                    <th>Note / Summary</th>
+                    <th class="text-center">Details</th>
+                    <th class="text-center">Interest</th>
+                    <th class="text-center">Follow Up</th>
+                    <th class="text-center">Recording</th>
+                    <th class="pe-4 text-end">Log Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in history %}
+                <tr>
+                    <td class="ps-4 fw-bold text-primary">{{ entry.CallDate if entry.CallDate else '-' }}</td>
+                    <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ entry.Agent }}</span></td>
+                    <td>
+                        <div class="fw-bold text-dark">{{ entry.CustomerName or 'Deleted Customer' }}</div>
+                        <div class="smaller text-muted font-monospace">{{ entry.CustomerPhone or '-' }}</div>
+                    </td>
+                    <td style="max-width: 200px;" class="text-truncate">{{ entry.Note or '-' }}</td>
+                    <td class="text-center">
+                        <a href="{{ url_for('dashboard.history_detail', history_id=entry.ID) }}" target="_blank" class="btn btn-xs btn-light border px-2">
+                            <i class="fas fa-external-link-alt me-1"></i> View
+                        </a>
+                    </td>
+                    <td class="text-center">
+                        {% if entry.InterestStar %}
+                        <span class="text-warning">{% for i in range(entry.InterestStar|int) %}⭐{% endfor %}</span>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td class="text-center">
+                        <span class="text-danger fw-bold">{{ entry.FollowUpDate if entry.FollowUpDate else '-' }}</span>
+                    </td>
+                    <td class="text-center">
+                        {% if entry.RecordingURL %}
+                        <a href="{{ entry.RecordingURL }}" target="_blank" class="btn btn-xs btn-outline-danger px-2 d-flex align-items-center justify-content-center gap-1">
+                            <i class="fas fa-play" style="font-size: 0.6rem;"></i> <span>View</span>
+                        </a>
+                        {% else %}-{% endif %}
+                    </td>
+                    <td class="pe-4 text-end text-muted smaller">
+                        <div>{{ entry.Timestamp.split(' ')[0] if entry.Timestamp else '' }}</div>
+                        <div style="font-size: 0.65rem;">{{ entry.Timestamp.split(' ')[1] if entry.Timestamp and ' ' in entry.Timestamp else '' }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if not history %}
+    <div class="p-5 text-center bg-light text-muted">
+        No interaction records found in the system.
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .btn-xs { padding: 0.15rem 0.4rem; font-size: 0.7rem; border-radius: 4px; }
+</style>
+{% endblock %}

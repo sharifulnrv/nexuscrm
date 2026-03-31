@@ -38,7 +38,7 @@
                             <th>Name</th>
                             <th>Username</th>
                             <th>Phone</th>
-                            <th>Action</th>
+                            <th class="text-end pe-4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,10 +47,15 @@
                             <td>{{ agent.Name }}</td>
                             <td>{{ agent.Username }}</td>
                             <td>{{ agent.Phone }}</td>
-                            <td>
-                                <a href="{{ url_for('dashboard.delete_agent', username=agent.Username) }}" class="text-danger" onclick="return confirm('Are you sure?')">
-                                    <i class="fas fa-trash"></i>
-                                </a>
+                            <td class="text-end">
+                                <div class="btn-group">
+                                    <a href="{{ url_for('dashboard.edit_agent', username=agent.Username) }}" class="btn btn-xs btn-light border px-2" title="Edit Agent">
+                                        <i class="fas fa-edit text-primary me-1"></i> Edit
+                                    </a>
+                                    <a href="{{ url_for('dashboard.delete_agent', username=agent.Username) }}" class="btn btn-xs btn-light border px-2 text-danger" onclick="return confirm('Are you sure?')" title="Delete Agent">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}

@@ -8,9 +8,14 @@
         <p class="text-muted small">Manage your daily interactions and track follow-ups.</p>
     </div>
     <div class="col-md-6 col-sm-12 text-md-end mt-3 mt-md-0">
-        <a href="{{ url_for('dashboard.add_lead') }}" class="btn btn-primary w-100 w-md-auto">
-            <i class="fas fa-plus me-2"></i> New Prospect
-        </a>
+        <div class="btn-group shadow-sm w-100 w-md-auto">
+            <a href="{{ url_for('dashboard.add_lead') }}" class="btn btn-primary d-flex align-items-center justify-content-center">
+                <i class="fas fa-plus me-2"></i> New Prospect
+            </a>
+            <a href="#leadSection" class="btn btn-light border-start">
+                <i class="fas fa-list-ul text-warning me-1"></i> Leads
+            </a>
+        </div>
     </div>
 </div>
 
@@ -86,47 +91,88 @@
 
 <!-- Quick Stats for Agent -->
 <div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
-        <div class="card border-0 shadow-sm p-3 h-100 border-left border-4 border-primary">
-            <div class="text-muted smaller fw-bold text-uppercase">Today's Reminders</div>
-            <h4 class="fw-800 mb-0">{{ today_tasks|length }}</h4>
+    <div class="col-6 col-lg-4">
+        <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+            <div class="text-muted smaller fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">Today's Tasks</div>
+            <h4 class="fw-800 mb-0 text-primary">{{ today_tasks|length }}</h4>
+            <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-primary" style="width: 100%"></div>
+            </div>
         </div>
     </div>
-    <div class="col-6 col-md-4">
-        <div class="card border-0 shadow-sm p-3 h-100 bg-white border-left border-4 border-warning">
-            <div class="text-muted smaller fw-bold text-uppercase">Overdue</div>
-            <h4 class="fw-800 mb-0">{{ overdue|length }}</h4>
+    <div class="col-6 col-lg-4">
+        <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+            <div class="text-muted smaller fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">Overdue</div>
+            <h4 class="fw-800 mb-0 text-danger">{{ overdue|length }}</h4>
+            <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-danger" style="width: {{ overdue_percent }}%"></div>
+            </div>
         </div>
     </div>
-    <div class="col-12 col-md-4">
-        <div class="card border-0 shadow-sm p-3 h-100 bg-white border-left border-4 border-success">
-            <div class="text-muted smaller fw-bold text-uppercase">Active Leads</div>
+    <div class="col-12 col-lg-4">
+        <div class="card border-0 shadow-sm p-3 h-100 bg-white">
+            <div class="text-muted smaller fw-bold text-uppercase mb-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">Managed Leads</div>
             <h4 class="fw-800 mb-0">{{ leads|length }}</h4>
+            <div class="progress mt-2" style="height: 4px;">
+                <div class="progress-bar bg-success" style="width: 100%"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Intelligence Insights Section -->
+<div class="row g-4 mb-5 page-transition justify-content-center">
+    <div class="col-12 col-md-8 col-xl-6">
+        <div class="card border-0 shadow-md rounded-lg">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-800 text-muted small text-uppercase mb-0">Lead Quality Portfolio</h6>
+                    <i class="fas fa-chart-pie text-primary opacity-25"></i>
+                </div>
+                <div id="qualityChart" style="min-height: 250px;"></div>
+            </div>
         </div>
     </div>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var ratingData = {{ rating_dist|tojson }};
+        var optionsQuality = {
+            series: ratingData,
+            chart: { type: 'donut', height: 280, width: '100%', fontFamily: 'Inter, sans-serif' },
+            labels: ['Unrated', 'Poor', 'Fair', 'Neutral', 'Good', 'Excellent'],
+            colors: ['#cbd5e1', '#f87171', '#fbbf24', '#38bdf8', '#818cf8', '#6366f1'],
+            dataLabels: { enabled: false },
+            legend: { position: 'bottom', horizontalAlign: 'center' },
+            plotOptions: { pie: { donut: { size: '75%' } } },
+            stroke: { show: false }
+        };
+        new ApexCharts(document.querySelector("#qualityChart"), optionsQuality).render();
+    });
+</script>
+
 {% if today_tasks %}
 <!-- Today's Work List -->
-<div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: #f0f7ff;">
-    <div class="card-header bg-transparent border-0 p-3 pb-0">
+<div class="card border-0 shadow-sm rounded-4 mb-4 bg-primary-soft">
+    <div class="card-header bg-transparent border-0 p-3 pb-0 d-flex justify-content-between align-items-center">
         <h6 class="fw-bold mb-0 text-primary"><i class="fas fa-list-check me-2"></i>To-Do Today</h6>
+        <span class="badge bg-primary text-white rounded-pill smaller fw-bold">{{ today_tasks|length }}</span>
     </div>
     <div class="card-body p-3">
-        <div class="list-group list-group-flush bg-transparent">
+        <div class="row g-2">
             {% for rem in today_tasks %}
-            <a href="{{ url_for('dashboard.edit_lead', lead_id=rem.ID) }}" class="list-group-item list-group-item-action bg-transparent border-0 d-flex justify-content-between align-items-center px-2 py-2">
-                <div class="d-flex align-items-center">
-                    <div class="bg-primary text-white rounded-circle me-3 d-grid place-items-center" style="width: 24px; height: 24px; font-size: 0.7rem;">
-                        <i class="fas fa-phone-alt"></i>
+            <div class="col-12 col-md-6">
+                <a href="{{ url_for('dashboard.edit_lead', lead_id=rem.ID) }}" class="p-3 bg-white rounded-3 border-0 d-flex justify-content-between align-items-center shadow-xs text-decoration-none transition-all hover-translate-y">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm me-3" style="width: 32px; height: 32px; font-size: 0.8rem;">{{ rem.Name[0]|upper }}</div>
+                        <div>
+                            <div class="fw-bold small text-dark">{{ rem.Name }}</div>
+                            <div class="smaller text-muted">{{ rem.Phone }}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div class="fw-bold small">{{ rem.Name }}</div>
-                        <div class="smaller text-muted">{{ rem.Phone }}</div>
-                    </div>
-                </div>
-                <i class="fas fa-chevron-right text-muted opacity-25 small"></i>
-            </a>
+                    <i class="fas fa-chevron-right text-muted opacity-25"></i>
+                </a>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -134,19 +180,55 @@
 {% endif %}
 
 <!-- My Lead Directory -->
+<div id="leadSection" class="card border-0 shadow-sm rounded-4 mb-4">
+    <div class="card-body p-3 p-md-4">
+        <form method="GET" action="{{ url_for('dashboard.index') }}" class="row g-3 align-items-end">
+            <div class="col-12 col-lg-3">
+                <label class="smaller text-muted fw-bold mb-1 ms-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">SEARCH</label>
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0 border-light"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 border-light bg-light" placeholder="Name or phone..." value="{{ q or '' }}">
+                </div>
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="smaller text-muted fw-bold mb-1 ms-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">LAST CALL</label>
+                <input type="date" name="last_call" class="form-control form-control-sm border-light bg-light" value="{{ last_call or '' }}">
+            </div>
+            <div class="col-6 col-lg-2">
+                <label class="smaller text-muted fw-bold mb-1 ms-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">FOLLOW UP</label>
+                <input type="date" name="followup" class="form-control form-control-sm border-light bg-light" value="{{ followup or '' }}">
+            </div>
+            <div class="col-4 col-lg-2">
+                <label class="smaller text-muted fw-bold mb-1 ms-1" style="font-size: 0.65rem; letter-spacing: 0.05em;">RATING</label>
+                <select name="rating" class="form-select form-select-sm border-light bg-light">
+                    <option value="">All</option>
+                    {% for i in range(1, 6) %}
+                    <option value="{{ i }}" {% if rating == i|string %}selected{% endif %}>{{ i }} ⭐</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-8 col-lg-1">
+                <div class="form-check form-switch pt-2">
+                    <input class="form-check-input" type="checkbox" name="fresh" value="1" id="freshCheckAgent" {% if fresh == '1' %}checked{% endif %}>
+                    <label class="form-check-label smaller fw-bold text-muted" for="freshCheckAgent" style="font-size: 0.6rem;">FRESH</label>
+                </div>
+            </div>
+            <div class="col-12 col-lg-2 d-flex gap-1">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1" title="Apply Filters">
+                    <i class="fas fa-filter"></i>
+                </button>
+                <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm btn-light border flex-grow-1" title="Clear All">
+                    <i class="fas fa-sync-alt"></i>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-5">
-    <div class="card-header bg-white p-4">
-        <div class="row align-items-center">
-            <div class="col-md-6 col-sm-12 mb-3 mb-md-0">
-                <h5 class="fw-bold mb-0">My Lead Directory</h5>
-            </div>
-            <div class="col-md-6 col-sm-12 text-md-end">
-                <form class="d-flex" method="GET" action="{{ url_for('dashboard.index') }}">
-                    <input type="text" name="q" class="form-control me-2" placeholder="Search my leads..." value="{{ q or '' }}">
-                    <button class="btn btn-primary" type="submit">Search</button>
-                </form>
-            </div>
-        </div>
+    <div class="card-header bg-white p-4 pb-2 border-bottom-0 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0">My Lead Directory</h5>
+        <span class="smaller text-muted fw-bold">{{ leads|length }} LEADS</span>
     </div>
     <div class="table-responsive">
         <table class="table table-hover mb-0">
@@ -154,19 +236,32 @@
                 <tr>
                     <th>Customer</th>
                     <th class="d-none d-md-table-cell">Phone</th>
+                    <th class="text-center">Last Call</th>
+                    <th class="text-center">Follow Up</th>
                     <th class="text-center">Rating</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for lead in leads %}
-                <tr>
+                <tr class="{% if not lead.LastCallDate %}bg-info-subtle bg-opacity-10{% endif %}">
                     <td>
-                        <div class="fw-bold text-dark">{{ lead.Name }}</div>
-                        <div class="d-md-none small text-primary font-monospace">{{ lead.Phone }}</div>
+                        <a href="{{ url_for('dashboard.edit_lead', lead_id=lead.ID) }}" class="text-decoration-none hover-secondary">
+                            <div class="fw-bold text-dark">{{ lead.Name }}</div>
+                        </a>
+                        <div class="d-md-none small text-primary font-monospace mt-1">{{ lead.Phone }}</div>
                         <div class="text-muted smaller d-none d-md-block">{{ lead.Profession or 'Prospect' }}</div>
+                        {% if not lead.LastCallDate %}
+                        <span class="badge bg-info text-dark smaller mt-1" style="font-size: 0.6rem;">FRESH LEAD</span>
+                        {% endif %}
                     </td>
                     <td class="d-none d-md-table-cell"><span class="fw-medium font-monospace">{{ lead.Phone }}</span></td>
+                    <td class="text-center">
+                        <div class="smaller text-secondary fw-bold">{{ lead.LastCallDate if lead.LastCallDate else '-' }}</div>
+                    </td>
+                    <td class="text-center">
+                        <div class="smaller text-danger fw-bold">{{ lead.FollowUpDate if lead.FollowUpDate else '-' }}</div>
+                    </td>
                     <td class="text-center">
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">
                             {{ lead.InterestStar }} / 5
