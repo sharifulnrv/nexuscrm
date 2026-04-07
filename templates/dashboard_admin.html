@@ -290,7 +290,7 @@
                         <div class="small fw-bold">{{ lead.Agent }}</div>
                         {% set is_pending = false %}
                         {% for h in pending_handovers %}
-                            {% if str(h.LeadID) == str(lead.ID) %}{% set is_pending = true %}{% endif %}
+                            {% if h.LeadID|string == lead.ID|string %}{% set is_pending = true %}{% endif %}
                         {% endfor %}
                         {% if is_pending %}
                         <span class="smaller text-warning"><i class="fas fa-clock"></i> Transfer Pending</span>
